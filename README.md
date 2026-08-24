@@ -1,6 +1,6 @@
 # Marketing Campaign Performance Analysis
 
-> **Status:** Core analysis documented · Tableau dashboard in progress
+> **Status:** Validated data and executable SQLite analysis complete · Tableau dashboard in progress
 
 ## Overview
 
@@ -25,6 +25,13 @@ This project analyses a bank direct-marketing campaign to measure term-deposit c
 - Reconciled every segment summary to the full 41,188-contact population.
 - Compared channel, month, occupation, age band, contact attempts, weekday and prior outcome.
 - Separated descriptive post-call information from valid pre-contact variables.
+
+## Repository contents
+
+- [`data/`](data/) — cleaned dataset, preview sample, source and validation notes
+- [`sql/`](sql/) — executable SQLite schema, leakage-aware analysis views and run guide
+- [`scripts/build_database.py`](scripts/build_database.py) — standard-library loader that rebuilds and validates `project.db`
+- [`tableau/`](tableau/) — build guide; workbook and screenshots are still pending
 
 ## Tableau dashboard — in progress
 
@@ -51,8 +58,9 @@ Planned views:
 - [x] SQL analysis documented
 - [x] Leakage-aware recommendations documented
 - [x] Add cleaned data with source and validation notes
+- [x] Add reproducible SQLite database loader
 - [ ] Add reproducible preparation code
-- [ ] Add complete SQL script and analysis outputs
+- [x] Add complete SQL schema and analysis views
 - [ ] Build and publish Tableau dashboard
 - [ ] Add dashboard screenshots and Tableau Public link
 

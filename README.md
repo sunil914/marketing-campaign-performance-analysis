@@ -30,8 +30,22 @@ This project analyses a bank direct-marketing campaign to measure term-deposit c
 
 - [`data/`](data/) — cleaned dataset, preview sample, source and validation notes
 - [`sql/`](sql/) — executable SQLite schema, leakage-aware analysis views and run guide
+- [`scripts/prepare_data.py`](scripts/prepare_data.py) — dependency-free source preparation with KPI and checksum validation
 - [`scripts/build_database.py`](scripts/build_database.py) — standard-library loader that rebuilds and validates `project.db`
 - [`tableau/`](tableau/) — build guide; workbook and screenshots are still pending
+
+## Reproduce the prepared data
+
+1. Download and extract UCI’s `bank-additional.zip`.
+2. From the repository root, run:
+
+```bash
+python3 scripts/prepare_data.py path/to/bank-additional-full.csv
+```
+
+The command rebuilds `data/bank_marketing_clean.csv.gz` and the 500-row browser sample using only Python’s standard library. Before replacing either file, it validates **41,188 contacts**, **4,640 conversions**, **2.57 average attempts**, **258.29 seconds average duration** and the documented uncompressed SHA-256.
+
+Then run `python3 scripts/build_database.py` to rebuild `project.db` and the analysis views.
 
 ## Tableau dashboard — in progress
 
@@ -59,7 +73,7 @@ Planned views:
 - [x] Leakage-aware recommendations documented
 - [x] Add cleaned data with source and validation notes
 - [x] Add reproducible SQLite database loader
-- [ ] Add reproducible preparation code
+- [x] Add reproducible preparation code
 - [x] Add complete SQL schema and analysis views
 - [ ] Build and publish Tableau dashboard
 - [ ] Add dashboard screenshots and Tableau Public link

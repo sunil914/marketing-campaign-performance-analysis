@@ -47,6 +47,14 @@ Any worksheet containing duration must include the label:
 
 ## 3. Required fields
 
+The prepared session-level input is already committed as `data/bank_marketing_clean.csv.gz`. From the repository root, create a local Tableau-ready CSV and verify it against the uncompressed SHA-256 in [`data/README.md`](../data/README.md):
+
+```bash
+gzip -dk data/bank_marketing_clean.csv.gz
+```
+
+Connect Tableau to the resulting `data/bank_marketing_clean.csv`. Keep this one-row-per-contact file as the dashboard source; use `project.db` and its aggregate views only for independent reconciliation, not as joins that could multiply contact counts.
+
 Confirm the prepared data contains these fields before building worksheets:
 
 | Field | Purpose |
@@ -323,21 +331,15 @@ Before publishing to Tableau Public:
 - [ ] Tableau Public link is added to the README
 - [ ] Final screenshot is added under `images/`
 
-## 12. Next repository assets
+## 12. Remaining dashboard evidence
 
-The next implementation phase should add:
+The validated source, preparation code, SQLite analysis and Tableau build specification are already committed. Do not add duplicate aggregate CSV exports or claim outputs that have not been created.
 
-```text
-data/bank_marketing_clean.csv
-sql/analysis.sql
-analysis/kpis.json
-tableau/conversion_by_channel.csv
-tableau/conversion_by_month.csv
-tableau/conversion_by_job.csv
-tableau/conversion_by_age_band.csv
-tableau/conversion_by_attempt_band.csv
-tableau/conversion_by_previous_outcome.csv
-images/dashboard.png
-```
+The remaining evidence is:
+
+- A real Tableau workbook built from the validated contact-level source
+- Desktop and phone screenshots under `images/`
+- A working Tableau Public link added to the project README
+- Completed reconciliation, filter, accessibility and leakage checks from the publishing checklist
 
 Do not mark the dashboard complete until the workbook is published, the live link works and every validation check passes.

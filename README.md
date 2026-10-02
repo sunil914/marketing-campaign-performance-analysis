@@ -32,6 +32,7 @@ This project analyses a bank direct-marketing campaign to measure term-deposit c
 - [`sql/`](sql/) — executable SQLite schema, leakage-aware analysis views and run guide
 - [`scripts/prepare_data.py`](scripts/prepare_data.py) — dependency-free source preparation with KPI and checksum validation
 - [`scripts/build_database.py`](scripts/build_database.py) — standard-library loader that rebuilds and validates `project.db`
+- [`scripts/prepare_tableau_data.py`](scripts/prepare_tableau_data.py) — dependency-free, checksum-verified contact-level Tableau preparation
 - [`tableau/`](tableau/) — build guide; workbook and screenshots are still pending
 
 ## Reproduce the prepared data
@@ -46,6 +47,24 @@ python3 scripts/prepare_data.py path/to/bank-additional-full.csv
 The command rebuilds `data/bank_marketing_clean.csv.gz` and the 500-row browser sample using only Python’s standard library. Before replacing either file, it validates **41,188 contacts**, **4,640 conversions**, **2.57 average attempts**, **258.29 seconds average duration** and the documented uncompressed SHA-256.
 
 Then run `python3 scripts/build_database.py` to rebuild `project.db` and the analysis views.
+
+## Prepare the Tableau source
+
+Create the validated one-row-per-contact Tableau CSV from the committed gzip source:
+
+```bash
+python3 scripts/prepare_tableau_data.py
+```
+
+The script verifies both published SHA-256 values, the 26-column schema, all five derived fields, **41,188 contacts**, **4,640 conversions**, **2.57 average attempts** and **258.29 seconds average duration** before atomically writing `tableau/bank_marketing_tableau.csv`.
+
+Choose another committed gzip input or local destination when needed:
+
+```bash
+python3 scripts/prepare_tableau_data.py --source "path/to/bank_marketing_clean.csv.gz" --output "path/to/bank_marketing_tableau.csv"
+```
+
+If any checksum, schema, derived-field or KPI check fails, the existing output is not replaced. Keep this contact-level file as the Tableau source and use SQLite aggregates only for independent reconciliation, not as joins that could multiply contacts.
 
 ## Tableau dashboard — in progress
 

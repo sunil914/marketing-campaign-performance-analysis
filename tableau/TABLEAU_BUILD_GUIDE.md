@@ -47,13 +47,23 @@ Any worksheet containing duration must include the label:
 
 ## 3. Required fields
 
-The prepared session-level input is already committed as `data/bank_marketing_clean.csv.gz`. From the repository root, create a local Tableau-ready CSV and verify it against the uncompressed SHA-256 in [`data/README.md`](../data/README.md):
+The validated contact-level input is committed as `data/bank_marketing_clean.csv.gz`. From the repository root, generate the Tableau-ready CSV through the validated workflow:
 
 ```bash
-gzip -dk data/bank_marketing_clean.csv.gz
+python3 scripts/prepare_tableau_data.py
 ```
 
-Connect Tableau to the resulting `data/bank_marketing_clean.csv`. Keep this one-row-per-contact file as the dashboard source; use `project.db` and its aggregate views only for independent reconciliation, not as joins that could multiply contact counts.
+The command verifies the compressed and uncompressed SHA-256 values, the exact 26-column schema, all five derived fields and the documented KPIs before atomically writing `tableau/bank_marketing_tableau.csv`. If any check fails, it leaves an existing output unchanged.
+
+Use controlled alternative paths when needed:
+
+```bash
+python3 scripts/prepare_tableau_data.py \
+  --source "path/to/bank_marketing_clean.csv.gz" \
+  --output "path/to/bank_marketing_tableau.csv"
+```
+
+Connect Tableau to the generated CSV and confirm that its grain is one row per campaign contact. Keep `project.db` and its aggregate views separate for independent reconciliation; do not join them to the contact rows because that could multiply counts.
 
 Confirm the prepared data contains these fields before building worksheets:
 

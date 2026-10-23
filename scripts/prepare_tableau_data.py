@@ -156,13 +156,18 @@ def main() -> None:
         default=ROOT / "tableau" / "bank_marketing_tableau.csv",
         help="validated CSV destination (default: tableau/bank_marketing_tableau.csv)",
     )
+    parser.add_argument(
+        "--check-only",
+        action="store_true",
+        help="Validate the committed source without creating or replacing the Tableau CSV.",
+    )
     args = parser.parse_args()
 
     source = args.source.resolve()
     output = args.output.resolve()
     if not source.is_file():
         raise FileNotFoundError(f"Tableau source not found: {source}")
-    if source == output:
+    if not args.check_only and source == output:
         raise ValueError("Source and output paths must be different.")
 
     compressed_digest = sha256(source)
@@ -172,9 +177,12 @@ def main() -> None:
             f"expected {EXPECTED_COMPRESSED_SHA256}, got {compressed_digest}"
         )
 
-    output.parent.mkdir(parents=True, exist_ok=True)
+    temporary_parent = None
+    if not args.check_only:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        temporary_parent = output.parent
     descriptor, temporary_name = tempfile.mkstemp(
-        prefix="bank-tableau-", suffix=".csv", dir=output.parent
+        prefix="bank-tableau-", suffix=".csv", dir=temporary_parent
     )
     os.close(descriptor)
     temporary = Path(temporary_name)
@@ -186,11 +194,15 @@ def main() -> None:
                 f"expected {EXPECTED_UNCOMPRESSED_SHA256}, got {uncompressed_digest}"
             )
         rows, conversions, average_attempts, average_duration = validate(temporary)
-        os.replace(temporary, output)
+        if not args.check_only:
+            os.replace(temporary, output)
     finally:
         temporary.unlink(missing_ok=True)
 
-    print(f"Prepared {rows:,} Tableau contact rows in {output}.")
+    if args.check_only:
+        print(f"Validation passed for {rows:,} Tableau contact rows; no output written.")
+    else:
+        print(f"Prepared {rows:,} Tableau contact rows in {output}.")
     print(f"Conversions: {conversions:,}")
     print(f"Average attempts: {average_attempts:.2f}")
     print(f"Average duration: {average_duration:.2f} seconds")

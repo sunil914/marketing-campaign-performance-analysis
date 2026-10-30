@@ -26,6 +26,7 @@ MONTH_NUMBER = {
 }
 EXPECTED_ROWS = 41_188
 EXPECTED_CONVERSIONS = 4_640
+EXPECTED_CONVERSION_RATE = 11.27
 EXPECTED_AVERAGE_ATTEMPTS = 2.57
 EXPECTED_AVERAGE_DURATION = 258.29
 EXPECTED_COMPRESSED_SHA256 = (
@@ -75,7 +76,7 @@ def decompress(source: Path, destination: Path) -> str:
     return digest.hexdigest()
 
 
-def validate(path: Path) -> tuple[int, int, float, float]:
+def validate(path: Path) -> tuple[int, int, float, float, float]:
     rows = conversions = campaign_total = duration_total = 0
     with path.open(encoding="utf-8", newline="") as stream:
         reader = csv.DictReader(stream)
@@ -122,11 +123,13 @@ def validate(path: Path) -> tuple[int, int, float, float]:
 
     if rows == 0:
         raise ValueError("Tableau source contains no contact rows.")
+    conversion_rate = round(conversions / rows * 100, 2)
     average_attempts = round(campaign_total / rows, 2)
     average_duration = round(duration_total / rows, 2)
     checks = {
         "contacts": (rows, EXPECTED_ROWS),
         "conversions": (conversions, EXPECTED_CONVERSIONS),
+        "conversion rate": (conversion_rate, EXPECTED_CONVERSION_RATE),
         "average attempts": (average_attempts, EXPECTED_AVERAGE_ATTEMPTS),
         "average duration": (average_duration, EXPECTED_AVERAGE_DURATION),
     }
@@ -137,7 +140,7 @@ def validate(path: Path) -> tuple[int, int, float, float]:
     ]
     if failures:
         raise ValueError("Validation failed:\n- " + "\n- ".join(failures))
-    return rows, conversions, average_attempts, average_duration
+    return rows, conversions, conversion_rate, average_attempts, average_duration
 
 
 def main() -> None:
@@ -193,7 +196,7 @@ def main() -> None:
                 "Uncompressed SHA-256 mismatch: "
                 f"expected {EXPECTED_UNCOMPRESSED_SHA256}, got {uncompressed_digest}"
             )
-        rows, conversions, average_attempts, average_duration = validate(temporary)
+        rows, conversions, conversion_rate, average_attempts, average_duration = validate(temporary)
         if not args.check_only:
             os.replace(temporary, output)
     finally:
@@ -204,6 +207,7 @@ def main() -> None:
     else:
         print(f"Prepared {rows:,} Tableau contact rows in {output}.")
     print(f"Conversions: {conversions:,}")
+    print(f"Conversion rate: {conversion_rate:.2f}%")
     print(f"Average attempts: {average_attempts:.2f}")
     print(f"Average duration: {average_duration:.2f} seconds")
     print(f"Compressed SHA-256: {compressed_digest}")
